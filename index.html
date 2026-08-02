@@ -254,7 +254,7 @@
     </div>
 
     <div class="stats-toggle-row">
-      <button class="stats-toggle-btn" id="statsToggleBtn">📊 Ver estadísticas por especialidad</button>
+      <button class="stats-toggle-btn" id="statsToggleBtn">📊 Ver estadística y situación real de las bolsas de cada especialidad</button>
     </div>
     <div id="specStatsPanel" class="spec-stats-panel" style="display:none"></div>
 
@@ -653,7 +653,8 @@ function buildLivePosCell(code, bloque, total, rankField){
   const rankActual = actual && actual[rankField] ? actual[rankField][code] : null;
   if(rankActual == null) return null;
   const fechaTxt = new Date(info.fecha).toLocaleDateString('es-ES');
-  return `puesto ${rankActual.toLocaleString('es-ES')} de ${total.toLocaleString('es-ES')} <span style="color:var(--gris-500);font-weight:400;">(${fechaTxt})</span>`;
+  const pct = Math.min(100, Math.round((rankActual / total) * 1000) / 10);
+  return `puesto ${rankActual.toLocaleString('es-ES')} de ${total.toLocaleString('es-ES')} <strong>(${pct.toFixed(1)}%)</strong> <span style="color:var(--gris-500);font-weight:400;">(${fechaTxt})</span>`;
 }
 
 function buildSpecStatsTable(){
@@ -695,7 +696,7 @@ function buildSpecStatsTable(){
   const liveIIHeader = hayBloqueII ? `<th>Posición alcanzada (en vivo) — Bloque II, curso 2026/2027</th>` : '';
 
   return `
-    <h3>Estadísticas por especialidad (Bloque I)</h3>
+    <h3>Estadística y situación real de las bolsas de cada especialidad</h3>
     <p class="spec-stats-note">Para cada curso de referencia, qué porcentaje de esa lista llegó a alcanzar el llamamiento antes de que acabara el curso escolar (fuente: SIDI, actos de adjudicación semanales). El total en Bloque I es del curso actual (2026/2027); los porcentajes de cursos anteriores se calculan sobre el listado de ese mismo curso, que puede tener un número distinto de personas por especialidad, así que no se traducen a una posición exacta. "Agotada" significa que ese curso se llegó a llamar a todo el listado de esa especialidad. Las columnas "Posición alcanzada (en vivo)" muestran, para el curso actual, el puesto más alto al que ha llegado el último llamamiento identificado con seguridad (dato en tiempo real vía CARM); puede tardar unos segundos en cargar o no haber dato todavía si no ha habido llamamientos de esa especialidad este curso.</p>
     <table class="spec-stats-table">
       <thead><tr><th>Especialidad</th><th>Total en Bloque I (2026/2027)</th><th>Posición alcanzada (en vivo) — Bloque I, curso 2026/2027</th>${liveIIHeader}${yearCols}</tr></thead>
@@ -714,10 +715,10 @@ statsToggleBtn.addEventListener('click', function(){
       specStatsBuilt = true;
     }
     specStatsPanel.style.display = 'block';
-    this.textContent = '📊 Ocultar estadísticas por especialidad';
+    this.textContent = '📊 Ocultar estadística y situación real de las bolsas de cada especialidad';
   } else {
     specStatsPanel.style.display = 'none';
-    this.textContent = '📊 Ver estadísticas por especialidad';
+    this.textContent = '📊 Ver estadística y situación real de las bolsas de cada especialidad';
   }
 });
 

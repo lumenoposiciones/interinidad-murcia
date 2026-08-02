@@ -322,20 +322,24 @@ function dayToDate(dayOffset){
   return d;
 }
 
-// interpolate the day-of-course at which a cumulative curve first reaches targetPct
+// interpolate the day-of-course at which a cumulative curve first reaches targetPct.
+// Se acota siempre a MIN_DAY: el primer punto de cada curva histórica es la lectura acumulada
+// en la primera semana de SIDI disponible (a veces con día negativo, antes del 1 de septiembre),
+// que es un artefacto de cuándo empezó a recopilarse el dato, no una fecha real de llamamiento
+// (no hay llamamientos reales en julio/agosto). Por eso nunca se debe devolver un día anterior a MIN_DAY.
 function dayForPercentile(curve, targetPct){
   if(!curve || curve.length===0) return null;
   if(curve[curve.length-1][1] < targetPct) return null; // never reached that year
-  if(curve[0][1] >= targetPct) return curve[0][0]; // already at/above target on day 0
+  if(curve[0][1] >= targetPct) return Math.max(curve[0][0], MIN_DAY); // already at/above target on day 0
   for(let i=1;i<curve.length;i++){
     const [d0,p0] = curve[i-1], [d1,p1] = curve[i];
     if(p1 >= targetPct){
-      if(p1 === p0) return d1;
+      if(p1 === p0) return Math.max(d1, MIN_DAY);
       const frac = (targetPct - p0) / (p1 - p0);
-      return d0 + frac*(d1-d0);
+      return Math.max(d0 + frac*(d1-d0), MIN_DAY);
     }
   }
-  return curve[curve.length-1][0];
+  return Math.max(curve[curve.length-1][0], MIN_DAY);
 }
 
 function estimateLlamamiento(code, targetPct){
@@ -366,7 +370,7 @@ function fmtMonthShort(date){
   return MESES[date.getMonth()].slice(0,3) + ' ' + String(date.getFullYear()).slice(2);
 }
 
-const MIN_DAY = -32; // ningún acto de adjudicación real es anterior a ~finales de julio
+const MIN_DAY = 0; // ningún llamamiento real ocurre antes del 1 de septiembre (día 0); no hay llamamientos en julio/agosto
 // Si la fecha estimada difiere en más de esto entre los cursos de referencia, el rango ya no
 // es información útil: se avisa en vez de mostrar una franja falsamente precisa.
 const VARIATION_WARN_DAYS = 120; // ~4 meses

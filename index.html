@@ -77,6 +77,18 @@
   .alert-box-text strong{color:var(--gris-900);}
   .alert-btn{flex:none;display:inline-flex;align-items:center;gap:7px;background:var(--naranja-600);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:inherit;font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .12s;}
   .alert-btn:hover{background:var(--naranja-700);}
+  .alert-btn svg{transform-origin:50% 0%;animation:bell-ring 2.4s ease-in-out infinite;}
+  @keyframes bell-ring{
+    0%, 62%, 100%{transform:rotate(0deg);}
+    64%{transform:rotate(16deg);}
+    68%{transform:rotate(-14deg);}
+    72%{transform:rotate(11deg);}
+    76%{transform:rotate(-9deg);}
+    80%{transform:rotate(6deg);}
+    84%{transform:rotate(-4deg);}
+    88%{transform:rotate(2deg);}
+    92%{transform:rotate(0deg);}
+  }
 
   .search-card{
     background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid var(--gris-100);
@@ -664,10 +676,13 @@ function buildSpecStatsTable(){
     const perYear = CALIB_YEARS.map(y=>{
       const curve = CALIB[y] && CALIB[y][code];
       if(!curve || !curve.length) return null;
-      const last = curve[curve.length-1];
-      const rawPct = last[1];
-      const puesto = last[2] != null ? last[2] : null;
-      return { year: y, pct: Math.min(100, rawPct), exhausted: rawPct >= 99.5, puesto };
+      const rawPct = curve[curve.length-1][1];
+      const pctClamped = Math.min(100, rawPct);
+      // Posición dentro de ESTA especialidad: se estima aplicando el % alcanzado ese curso al
+      // total actual de la especialidad (2026/2027), no el código de puesto general de la CARM
+      // (que mezcla todas las especialidades y confunde más de lo que aclara).
+      const posEspecialidad = Math.min(total, Math.round((pctClamped/100) * total));
+      return { year: y, pct: pctClamped, exhausted: rawPct >= 99.5, posEspecialidad };
     });
     const totalII = bySpecialtyII[code] || 0;
     const liveI = buildLivePosCell(code, 'I', total, '_rankSpec');
@@ -688,8 +703,7 @@ function buildSpecStatsTable(){
   const bodyRows = rows.map(r=>{
     const cells = r.perYear.map(p => {
       if(!p) return `<td class="num">—</td>`;
-      const puestoTxt = p.puesto != null ? `puesto ${p.puesto} · ` : '';
-      return `<td class="num">${puestoTxt}${p.pct.toFixed(1)}%${p.exhausted ? ' <span style="color:var(--gris-500);font-weight:400;">(agotada)</span>' : ''}</td>`;
+      return `<td class="num">${p.posEspecialidad.toLocaleString('es-ES')} de ${r.total.toLocaleString('es-ES')} · ${p.pct.toFixed(1)}%${p.exhausted ? ' <span style="color:var(--gris-500);font-weight:400;">(agotada)</span>' : ''}</td>`;
     }).join('');
     const liveICell = `<td class="num">${r.liveI || '—'}</td>`;
     const liveIICell = hayBloqueII ? `<td class="num">${r.totalII > 0 ? (r.liveII || '—') : '<span style="color:var(--gris-500);">n/a</span>'}</td>` : '';
@@ -700,7 +714,7 @@ function buildSpecStatsTable(){
 
   return `
     <h3>Estadística y situación real de las bolsas de cada especialidad</h3>
-    <p class="spec-stats-note">Para cada curso de referencia, hasta qué puesto y qué porcentaje de esa lista llegó a alcanzar el llamamiento antes de que acabara el curso escolar (fuente: SIDI, actos de adjudicación semanales). El total en Bloque I es del curso actual (2026/2027); el puesto y el porcentaje de cursos anteriores corresponden al código de puesto tal como figuraba en el listado de ese mismo curso, que puede tener un número distinto de personas por especialidad, así que no se traducen directamente al "puesto nº de orden" del curso actual. "Agotada" significa que ese curso se llegó a llamar a todo el listado de esa especialidad. Las columnas "Posición alcanzada (en vivo)" muestran, para el curso actual, el puesto más alto al que ha llegado el último llamamiento identificado con seguridad (dato en tiempo real vía CARM); puede tardar unos segundos en cargar o no haber dato todavía si no ha habido llamamientos de esa especialidad este curso.</p>
+    <p class="spec-stats-note">Para cada curso de referencia, hasta qué posición y qué porcentaje de la lista de esa especialidad llegó a alcanzar el llamamiento antes de que acabara el curso escolar (fuente: SIDI, actos de adjudicación semanales). El total en Bloque I es del curso actual (2026/2027); la posición de cursos anteriores es una estimación, calculada aplicando el % alcanzado ese curso al total actual de esa especialidad (no el total real de aquel curso, que puede haber sido distinto), para que sea comparable entre especialidades. "Agotada" significa que ese curso se llegó a llamar a todo el listado de esa especialidad. Las columnas "Posición alcanzada (en vivo)" muestran, para el curso actual, el puesto más alto al que ha llegado el último llamamiento identificado con seguridad (dato en tiempo real vía CARM); puede tardar unos segundos en cargar o no haber dato todavía si no ha habido llamamientos de esa especialidad este curso.</p>
     <table class="spec-stats-table">
       <thead><tr><th>Especialidad</th><th>Total en Bloque I (2026/2027)</th><th>Posición alcanzada (en vivo) — Bloque I, curso 2026/2027</th>${liveIIHeader}${yearCols}</tr></thead>
       <tbody>${bodyRows}</tbody>

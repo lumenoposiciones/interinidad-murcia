@@ -214,6 +214,17 @@
   .estim-legend-item{display:inline-flex;align-items:center;gap:4px;}
   .estim-legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
 
+  /* Contador en vivo del curso actual (2026/2027), dentro de cada tarjeta de especialidad,
+     encima del gráfico. Usa el mismo color que la línea "real" del gráfico para que se
+     entienda que son el mismo dato. */
+  .curso-actual-box{background:#fff;border:1.5px solid #0e9594;border-radius:9px;padding:10px 13px;margin-bottom:10px;}
+  .curso-actual-head{font-size:12.5px;font-weight:800;color:#0e9594;letter-spacing:.02em;display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .curso-actual-tag{background:#0e9594;color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:.04em;}
+  .curso-actual-tag.pending{background:var(--gris-300);color:var(--gris-700);}
+  .curso-actual-note{font-size:12.5px;color:var(--gris-700);line-height:1.5;margin:0;}
+  .curso-actual-counter{font-size:15px;color:var(--gris-900);margin:2px 0 0;}
+  .curso-actual-counter strong{color:#0e9594;font-size:17px;}
+
   footer.legal{max-width:900px;margin:6px auto 0;padding:0 18px;color:var(--gris-500);font-size:12.5px;line-height:1.6;}
   footer.legal a{color:var(--naranja-600);}
   .footer-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid var(--gris-100);}
@@ -508,6 +519,45 @@ function monthTicksInRange(minDay, maxDay){
   return ticks;
 }
 
+// Caja "Curso escolar: 2026/2027" — contador en vivo, propio de cada especialidad, que se coloca
+// encima del gráfico. Antes del primer llamamiento real muestra la posición de partida (marcador
+// inicial, ya visible aunque no haya datos todavía); en cuanto checkResultados detecta el primer
+// llamamiento real de esa especialidad, pasa a mostrar automáticamente cuántas personas quedan por
+// delante ahora (posición de partida menos lo ya alcanzado), sin necesidad de tocar nada más: se
+// activa solo porque POSICIONES_ACTUALES/POSICIONES_HISTORIAL empiezan a tener datos para esa clave.
+function buildCursoActualBox(code, rank, total){
+  const info = POSICIONES_ACTUALES[code + '_I'];
+  const partida = rank - 1; // nº de personas que te preceden el primer día del curso, antes de cualquier llamamiento
+  let body;
+  if(!info){
+    body = `<p class="curso-actual-counter">Te preceden <strong>${partida.toLocaleString('es-ES')}</strong> personas</p>
+      <p class="curso-actual-note">Posición de partida (curso 2026/2027): puesto ${rank.toLocaleString('es-ES')} de ${total.toLocaleString('es-ES')}. Todavía no se ha detectado ningún llamamiento real de esta especialidad — en cuanto se produzca el primero, este contador bajará automáticamente.</p>`;
+  } else {
+    const actual = DATA.find(d => d.p === info.posicion);
+    const rankActual = actual && actual._rankSpec ? actual._rankSpec[code] : null;
+    const fechaTxt = new Date(info.fecha).toLocaleDateString('es-ES');
+    if(rankActual == null){
+      body = `<p class="curso-actual-counter">Te preceden <strong>${partida.toLocaleString('es-ES')}</strong> personas</p>
+        <p class="curso-actual-note">Posición de partida (curso 2026/2027): puesto ${rank.toLocaleString('es-ES')} de ${total.toLocaleString('es-ES')}. Todavía no se ha podido identificar con seguridad ningún llamamiento real de esta especialidad.</p>`;
+    } else if(rank <= rankActual){
+      body = `<p class="curso-actual-counter">¡Ya superado!</p>
+        <p class="curso-actual-note">El último llamamiento real detectado (${fechaTxt}) llegó al puesto ${rankActual.toLocaleString('es-ES')}, por delante de tu posición de partida (${rank.toLocaleString('es-ES')}).</p>`;
+    } else {
+      const restantes = rank - rankActual;
+      const avance = partida - restantes;
+      const pct = Math.min(100, Math.round((rankActual/total)*1000)/10);
+      body = `<p class="curso-actual-counter">Te preceden <strong>${restantes.toLocaleString('es-ES')}</strong> personas</p>
+        <p class="curso-actual-note">Posición de partida: ${rank.toLocaleString('es-ES')} (${partida.toLocaleString('es-ES')} por delante). Último llamamiento real detectado (${fechaTxt}): puesto ${rankActual.toLocaleString('es-ES')} de ${total.toLocaleString('es-ES')} (${pct.toFixed(1)}%) — ${avance.toLocaleString('es-ES')} personas menos que al empezar el curso.</p>`;
+    }
+  }
+  const tagClass = info ? '' : ' pending';
+  const tagText = info ? 'EN VIVO' : 'A LA ESPERA DEL 1er LLAMAMIENTO';
+  return `<div class="curso-actual-box">
+      <div class="curso-actual-head">📈 Curso escolar: 2026/2027 <span class="curso-actual-tag${tagClass}">${tagText}</span></div>
+      ${body}
+    </div>`;
+}
+
 // Minigráfico SVG: curva de % acumulado alcanzado por día de curso, una línea por año de
 // referencia, más una línea horizontal marcando la posición (percentil) del aspirante y un
 // punto donde cada curva cruza esa línea (o un círculo hueco al final si esa posición no se
@@ -696,9 +746,11 @@ function renderEstimacion(personEntry){
     }
 
     const chartHtml = buildCurveChart(code, targetPct, rank, total);
+    const cursoActualHtml = buildCursoActualBox(code, rank, total);
     const toneClass = (specs.length > 1 && shownIdx % 2 === 1) ? ' estim-spec-tone-1' : '';
     html += `<div class="estim-spec${toneClass}">
         <div class="estim-spec-head"><span class="estim-spec-code">${code}</span><span class="estim-spec-name">${SPECIALTIES[code]}</span><span class="estim-pos">(puesto ${rank} de ${total} en esta especialidad, Bloque I)</span></div>
+        ${cursoActualHtml}
         ${bandHtml}
         <p class="estim-note">${noteHtml}${lowData?' <em>Aviso: pocos datos históricos para esta especialidad, estimación poco fiable.</em>':''}</p>
         ${chartHtml}

@@ -62,6 +62,18 @@
   .pdf-archive-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
   .pdf-archive-list a{color:var(--naranja-800);text-decoration:none;font-size:13.5px;font-weight:600;}
   .pdf-archive-list a:hover{text-decoration:underline;}
+  .how-it-works{margin:32px 0 0;}
+  .how-it-works h2{font-size:19px;margin:0 0 14px;}
+  .how-step{background:#fff;border:1px solid var(--gris-100);border-radius:12px;padding:16px;margin-bottom:0;}
+  .how-step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--naranja-600);color:#fff;font-weight:800;font-size:13px;margin-bottom:8px;}
+  .how-step h3{font-size:14.5px;margin:4px 0 6px;}
+  .how-step p{font-size:13px;color:var(--gris-700);line-height:1.5;margin:0;}
+  .faq{margin-top:20px;}
+  .faq h2{font-size:19px;margin:0 0 14px;}
+  .faq-item{background:#fff;border:1px solid var(--gris-100);border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+  .faq-item summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--negro);}
+  .faq-item summary::marker{color:var(--naranja-600);}
+  .faq-item p{font-size:13px;color:var(--gris-700);line-height:1.5;margin:10px 0 0;}
   .spec-stats-panel{background:#fff;border:1px solid var(--gris-100);border-radius:12px;padding:16px 18px;margin-top:10px;}
   .spec-stats-panel h3{margin:0 0 4px;font-size:15px;}
   .spec-stats-note{font-size:12.5px;color:var(--gris-500);margin:0 0 12px;line-height:1.5;}
@@ -295,6 +307,47 @@
     <div class="results-summary" id="resultsSummary"></div>
     <div class="results-list" id="resultsList"></div>
     <div id="detailArea"></div>
+
+    <section class="how-it-works" aria-labelledby="howItWorksTitle">
+      <h2 id="howItWorksTitle">¿Cómo funciona esta web?</h2>
+      <div class="grid3">
+        <div class="how-step">
+          <span class="how-step-num">1</span>
+          <h3>Busca tu nombre o tu DNI</h3>
+          <p>Escribe tu nombre y apellidos, o los 4 dígitos visibles de tu DNI/NIE, en el buscador de arriba. Verás tu posición exacta y tu bloque dentro del listado oficial.</p>
+        </div>
+        <div class="how-step">
+          <span class="how-step-num">2</span>
+          <h3>Consulta la posición en vivo</h3>
+          <p>La web cruza automáticamente cada acto de adjudicación telemática publicado por la CARM con el listado, y actualiza el % y la posición alcanzada en tu especialidad este curso.</p>
+        </div>
+        <div class="how-step">
+          <span class="how-step-num">3</span>
+          <h3>Mira la estimación de fecha</h3>
+          <p>A partir de cómo evolucionaron los llamamientos en cursos anteriores, se calcula una fecha orientativa de cuándo podrías recibir una llamada. Es una proyección estadística, no una promesa.</p>
+        </div>
+      </div>
+
+      <div class="faq">
+        <h2>Preguntas frecuentes</h2>
+        <details class="faq-item">
+          <summary>¿Es un servicio oficial de la CARM?</summary>
+          <p>No. Es una herramienta independiente elaborada a partir de los documentos que publica la Consejería de Educación y Formación Profesional de la Región de Murcia. No sustituye ni tiene validez sobre los canales oficiales: antes de solicitar una vacante, comprueba siempre los plazos y las instrucciones en los canales oficiales de la CARM.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo se calcula la "posible fecha de llamamiento"?</summary>
+          <p>Se compara tu posición con la curva real de avance del llamamiento en cursos anteriores para tu misma especialidad. No es una garantía: cada curso el ritmo de llamamientos puede variar según las vacantes que surjan.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Tiene algún coste?</summary>
+          <p>No. El buscador y todas sus funciones son gratuitos, sin necesidad de crear una cuenta.</p>
+        </details>
+        <details class="faq-item">
+          <summary>¿Cómo me entero de que hay una convocatoria nueva?</summary>
+          <p>Puedes registrar tu email más arriba ("Avísame de nuevas vacantes") para recibir un aviso automático en cuanto la CARM publique una convocatoria de acto de adjudicación telemático.</p>
+        </details>
+      </div>
+    </section>
   </div>
 
   <footer class="legal">

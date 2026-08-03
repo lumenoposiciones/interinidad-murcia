@@ -699,7 +699,7 @@ function buildSpecStatsTable(){
   // agota el Bloque I de esa especialidad).
   const hayBloqueII = rows.some(r => r.totalII > 0);
 
-  const yearCols = CALIB_YEARS.map(y => `<th>Máxima posición y % de la lista alcanzada — ${yearLabel(y)}</th>`).join('');
+  const yearCols = CALIB_YEARS.map(y => `<th>Estimación en base al ritmo real de posición y % alcanzados — ${yearLabel(y)}</th>`).join('');
   const bodyRows = rows.map(r=>{
     const cells = r.perYear.map(p => {
       if(!p) return `<td class="num">—</td>`;

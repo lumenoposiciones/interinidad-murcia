@@ -703,7 +703,7 @@ function buildSpecStatsTable(){
   const bodyRows = rows.map(r=>{
     const cells = r.perYear.map(p => {
       if(!p) return `<td class="num">—</td>`;
-      return `<td class="num">${p.posEspecialidad.toLocaleString('es-ES')} de ${r.total.toLocaleString('es-ES')} · ${p.pct.toFixed(1)}%${p.exhausted ? ' <span style="color:var(--gris-500);font-weight:400;">(agotada)</span>' : ''}</td>`;
+      return `<td class="num">${p.posEspecialidad.toLocaleString('es-ES')} · ${p.pct.toFixed(1)}%${p.exhausted ? ' <span style="color:var(--gris-500);font-weight:400;">(agotada)</span>' : ''}</td>`;
     }).join('');
     const liveICell = `<td class="num">${r.liveI || '—'}</td>`;
     const liveIICell = hayBloqueII ? `<td class="num">${r.totalII > 0 ? (r.liveII || '—') : '<span style="color:var(--gris-500);">n/a</span>'}</td>` : '';

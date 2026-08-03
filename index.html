@@ -60,7 +60,11 @@
   .spec-stats-panel{background:#fff;border:1px solid var(--gris-100);border-radius:12px;padding:16px 18px;margin-top:10px;}
   .spec-stats-panel h3{margin:0 0 4px;font-size:15px;}
   .spec-stats-note{font-size:12.5px;color:var(--gris-500);margin:0 0 12px;line-height:1.5;}
-  .spec-stats-table{width:100%;border-collapse:collapse;font-size:13px;}
+  /* La tabla tiene muchas columnas (especialidad, totales, en vivo, y una por cada curso de
+     calibración): en móvil no cabe sin aplastar el texto, así que se deja scroll horizontal
+     dentro de su propio contenedor en vez de desbordar toda la página. */
+  .spec-stats-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;}
+  .spec-stats-table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px;}
   .spec-stats-table th{text-align:center;color:var(--gris-500);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;padding:6px 8px;border-bottom:1.5px solid var(--gris-100);}
   .spec-stats-table th:first-child{text-align:left;}
   .spec-stats-table td{padding:8px 8px;border-bottom:1px solid var(--gris-100);text-align:center;}
@@ -210,7 +214,7 @@
   .estim-avail-note{font-size:12px;color:#7a5200;background:var(--amarillo-bg);border-radius:8px;padding:9px 12px;line-height:1.5;margin:0 0 14px;}
   .estim-chart{margin-top:10px;background:#fff;border:1px solid var(--naranja-100);border-radius:8px;padding:8px 8px 4px;}
   .estim-chart-svg{width:100%;height:auto;display:block;}
-  .estim-legend{display:flex;gap:12px;font-size:10.5px;color:var(--gris-700);margin:0 0 2px 4px;}
+  .estim-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:10.5px;color:var(--gris-700);margin:0 0 2px 4px;}
   .estim-legend-item{display:inline-flex;align-items:center;gap:4px;}
   .estim-legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
 
@@ -870,10 +874,12 @@ function buildSpecStatsTable(){
   return `
     <h3>Estadística y situación real de las bolsas de cada especialidad</h3>
     <p class="spec-stats-note">Para cada curso de referencia, hasta qué posición y qué porcentaje de la lista de esa especialidad llegó a alcanzar el llamamiento antes de que acabara el curso escolar (fuente: SIDI, actos de adjudicación semanales). El total en Bloque I es del curso actual (2026/2027); la posición de cursos anteriores es una estimación, calculada aplicando el % alcanzado ese curso al total actual de esa especialidad (no el total real de aquel curso, que puede haber sido distinto), para que sea comparable entre especialidades. "Agotada" significa que ese curso se llegó a llamar a todo el listado de esa especialidad. Las columnas "Posición alcanzada (en vivo)" muestran, para el curso actual, el puesto más alto al que ha llegado el último llamamiento identificado con seguridad (dato en tiempo real vía CARM); puede tardar unos segundos en cargar o no haber dato todavía si no ha habido llamamientos de esa especialidad este curso.</p>
-    <table class="spec-stats-table">
-      <thead><tr><th>Especialidad</th><th>Total en Bloque I (2026/2027)</th><th>Posición alcanzada (en vivo) — Bloque I, curso 2026/2027</th>${liveIIHeader}${yearCols}</tr></thead>
-      <tbody>${bodyRows}</tbody>
-    </table>
+    <div class="spec-stats-table-wrap">
+      <table class="spec-stats-table">
+        <thead><tr><th>Especialidad</th><th>Total en Bloque I (2026/2027)</th><th>Posición alcanzada (en vivo) — Bloque I, curso 2026/2027</th>${liveIIHeader}${yearCols}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
   `;
 }
 

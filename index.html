@@ -245,7 +245,7 @@
       <p class="subtitle">Buscador elaborado por <strong>Lumen Oposiciones</strong>. Consulta tu posición, bloque, especialidades acreditadas y el desglose completo de tu puntuación.</p>
       <div class="stats-row" id="statsRow"></div>
       <a class="pdf-link" href="https://www.carm.es/web/descarga?ARCHIVO=1_res_anexos_int_def.pdf&ALIAS=ARCH&IDCONTENIDO=208253&IDTIPO=60&RASTRO=c77%24m22725%2C22759%2C4254" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
         Descargar el listado oficial completo en PDF (CARM)
       </a>
     </header>
@@ -254,10 +254,10 @@
       <div class="search-row">
         <div class="search-input-box">
           <span class="search-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </span>
-          <input type="text" id="q" placeholder="Nombre y apellidos, o los 4 dígitos visibles del DNI…" autocomplete="off" spellcheck="false">
-          <button class="clear-btn" id="clearBtn" title="Borrar">✕</button>
+          <input type="text" id="q" placeholder="Nombre y apellidos, o los 4 dígitos visibles del DNI…" autocomplete="off" spellcheck="false" aria-label="Buscar por nombre, apellidos o los 4 dígitos visibles del DNI">
+          <button class="clear-btn" id="clearBtn" title="Borrar" aria-label="Borrar búsqueda">✕</button>
         </div>
         <select id="bloqueFilter">
           <option value="">Todos los bloques</option>
@@ -271,7 +271,7 @@
     <div class="alert-box">
       <div class="alert-box-text"><strong>¿Quieres enterarte al momento de una vacante nueva?</strong> Regístrate con tu email y te avisamos automáticamente en cuanto la CARM publique una convocatoria de acto de adjudicación telemático (el plazo para solicitar plaza suele ser muy breve).</div>
       <a class="alert-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdOCED7tRK8MqCXgKsmSX8v9yYrRIchdM1lj6GihSwW1IXhbw/viewform" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Avísame de nuevas vacantes
       </a>
     </div>
@@ -606,7 +606,9 @@ function buildCurveChart(code, targetPct, rank, total){
   const sx = d => plotX0 + (d-domMin)/(domMax-domMin) * (plotX1-plotX0);
   const sy = p => plotY1 - (p/100) * (plotY1-plotY0);
 
-  let svg = `<svg class="estim-chart-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  const targetPctForLabel = targetPct < 1 ? targetPct.toFixed(2) : targetPct.toFixed(1);
+  const chartAriaLabel = `Gráfico de evolución del llamamiento en la especialidad ${code}${SPECIALTIES[code] ? (' (' + SPECIALTIES[code] + ')') : ''}: porcentaje de la lista cubierto a lo largo del curso escolar, comparando ${yearsWithCurve.map(y=>yearLabel(y)).join(' y ')}${realCurve.length ? ' con los llamamientos reales ya producidos este curso 2026/2027' : ''}. Tu posición equivale al ${targetPctForLabel}% de la lista. El detalle numérico de esta estimación aparece también como texto justo encima de este gráfico.`;
+  let svg = `<svg class="estim-chart-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${chartAriaLabel.replace(/"/g,'&quot;')}"><title>${chartAriaLabel.replace(/</g,'&lt;')}</title>`;
 
   [0,50,100].forEach(p=>{
     const y = sy(p);

@@ -54,9 +54,12 @@
   .pdf-link{display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--naranja-800);font-size:13.5px;font-weight:600;text-decoration:none;border-bottom:1.5px solid var(--naranja-100);padding-bottom:2px;transition:border-color .12s;}
   .pdf-link:hover{border-color:var(--naranja-600);}
 
-  .stats-toggle-row{margin:14px 0 0;}
+  .stats-toggle-row{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:8px;}
   .stats-toggle-btn{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--naranja-100);color:var(--naranja-800);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:border-color .12s,background .12s;}
   .stats-toggle-btn:hover{border-color:var(--naranja-500);background:var(--naranja-50);}
+  .pdf-archive-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+  .pdf-archive-list a{color:var(--naranja-800);text-decoration:none;font-size:13.5px;font-weight:600;}
+  .pdf-archive-list a:hover{text-decoration:underline;}
   .spec-stats-panel{background:#fff;border:1px solid var(--gris-100);border-radius:12px;padding:16px 18px;margin-top:10px;}
   .spec-stats-panel h3{margin:0 0 4px;font-size:15px;}
   .spec-stats-note{font-size:12.5px;color:var(--gris-500);margin:0 0 12px;line-height:1.5;}
@@ -282,8 +285,10 @@
 
     <div class="stats-toggle-row">
       <button class="stats-toggle-btn" id="statsToggleBtn">📊 Ver estadística y situación real de las bolsas de cada especialidad</button>
+      <button class="stats-toggle-btn" id="pdfArchiveToggleBtn">📄 Ver histórico de llamamientos (PDFs)</button>
     </div>
     <div id="specStatsPanel" class="spec-stats-panel" style="display:none"></div>
+    <div id="pdfArchivePanel" class="spec-stats-panel" style="display:none"></div>
 
     <div class="results-summary" id="resultsSummary"></div>
     <div class="results-list" id="resultsList"></div>
@@ -902,6 +907,67 @@ statsToggleBtn.addEventListener('click', async function(){
   } else {
     specStatsPanel.style.display = 'none';
     this.textContent = '📊 Ver estadística y situación real de las bolsas de cada especialidad';
+  }
+});
+
+// Histórico de llamamientos en PDF: se archivan automáticamente (vía Apps Script) en el
+// repositorio público lumenoposiciones/historial-llamamientos-pdfs, carpeta pdfs/, con nombre
+// AAAA-MM-DD_<hash8>.pdf. Se listan aquí bajo demanda vía la API pública de contenidos de GitHub.
+const PDF_ARCHIVE_API = 'https://api.github.com/repos/lumenoposiciones/historial-llamamientos-pdfs/contents/pdfs';
+let pdfArchiveItems = null;
+let pdfArchiveLoadPromise = null;
+function ensurePdfArchiveLoaded_(){
+  if (pdfArchiveLoadPromise) return pdfArchiveLoadPromise;
+  pdfArchiveLoadPromise = fetch(PDF_ARCHIVE_API)
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(items){
+      pdfArchiveItems = (Array.isArray(items) ? items : [])
+        .filter(function(it){ return it && it.type === 'file' && /\.pdf$/i.test(it.name || ''); })
+        .sort(function(a, b){ return b.name.localeCompare(a.name); });
+    })
+    .catch(function(){
+      pdfArchiveItems = [];
+      pdfArchiveLoadPromise = null;
+    });
+  return pdfArchiveLoadPromise;
+}
+function buildPdfArchiveList(){
+  if(!pdfArchiveItems || !pdfArchiveItems.length){
+    return '<h3>Histórico de llamamientos (PDFs oficiales)</h3>'
+      + '<p class="spec-stats-note">Todavía no hay ningún PDF archivado. En cuanto se publique y procese el próximo acto de adjudicación, aparecerá aquí automáticamente.</p>';
+  }
+  const rows = pdfArchiveItems.map(function(it){
+    const m = it.name.match(/^(\d{4}-\d{2}-\d{2})_/);
+    const label = m ? fmtFullDate(m[1]) : it.name;
+    const href = escapeHtml(it.download_url || it.html_url || '#');
+    return `<li><a href="${href}" target="_blank" rel="noopener">📄 ${escapeHtml(label)}</a></li>`;
+  }).join('');
+  return `
+    <h3>Histórico de llamamientos (PDFs oficiales)</h3>
+    <p class="spec-stats-note">Copia de respaldo de los PDF oficiales publicados por la CARM para cada acto de adjudicación telemática, tal como se van procesando.</p>
+    <ul class="pdf-archive-list">${rows}</ul>
+  `;
+}
+
+const pdfArchiveToggleBtn = document.getElementById('pdfArchiveToggleBtn');
+const pdfArchivePanel = document.getElementById('pdfArchivePanel');
+let pdfArchiveBuilt = false;
+pdfArchiveToggleBtn.addEventListener('click', async function(){
+  if(pdfArchivePanel.style.display === 'none'){
+    if(!pdfArchiveBuilt){
+      pdfArchivePanel.style.display = 'block';
+      pdfArchivePanel.innerHTML = '<p class="spec-stats-note">Cargando histórico…</p>';
+      this.textContent = '📄 Ocultar histórico de llamamientos (PDFs)';
+      await ensurePdfArchiveLoaded_();
+      pdfArchivePanel.innerHTML = buildPdfArchiveList();
+      pdfArchiveBuilt = true;
+      return;
+    }
+    pdfArchivePanel.style.display = 'block';
+    this.textContent = '📄 Ocultar histórico de llamamientos (PDFs)';
+  } else {
+    pdfArchivePanel.style.display = 'none';
+    this.textContent = '📄 Ver histórico de llamamientos (PDFs)';
   }
 });
 

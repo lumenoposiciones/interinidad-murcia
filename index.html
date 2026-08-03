@@ -248,6 +248,7 @@
 
   footer.legal{max-width:900px;margin:6px auto 0;padding:0 18px;color:var(--gris-500);font-size:12.5px;line-height:1.6;}
   footer.legal a{color:var(--naranja-600);}
+  .visit-counter{display:block;text-align:center;color:var(--gris-500);font-size:12px;margin:14px 0 0;}
   .footer-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid var(--gris-100);}
 
   ::selection{background:var(--naranja-100);}
@@ -358,7 +359,22 @@
       Todos los cálculos (posición dentro del bloque, barras de comparación) se derivan de la puntuación total tal y como figura en el listado oficial.
       &nbsp;<a href="./privacidad.html">Política de privacidad</a>.
     </div>
+    <div id="visitCounterBox" class="visit-counter"></div>
   </footer>
+
+  <script data-role="visit-counter">
+  // Contador de visitas visible, a partir del recuento público de GoatCounter (mismo
+  // servicio que la analítica de la cabecera). Si el recuento público no está activado
+  // en la cuenta de GoatCounter, la petición fallará en silencio y no se muestra nada.
+  (function(){
+    var el = document.getElementById('visitCounterBox');
+    if(!el) return;
+    fetch('https://javier.goatcounter.com/counter/TOTAL.json')
+      .then(function(r){ if(!r.ok) throw new Error('sin datos'); return r.json(); })
+      .then(function(data){ el.textContent = '👀 ' + data.count + ' visitas a esta web'; })
+      .catch(function(){});
+  })();
+  </script>
 
 <script>
 const SPECIALTIES = {

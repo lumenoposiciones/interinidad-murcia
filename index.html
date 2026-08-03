@@ -309,22 +309,32 @@ const bloqueCounts = {I: byBloque.I.length, II: byBloque.II.length};
 // en cargar, y algunas especialidades pueden no tener dato todavía si aún no ha habido llamamientos
 // este curso o no se ha podido identificar con seguridad a los adjudicatarios.
 let POSICIONES_ACTUALES = {};
+// Historial de posiciones por especialidad_bloque: cada vez que checkResultados detecta un nuevo
+// maximo, se guarda {posicion, fecha}. Con esto se construye la curva REAL del curso 2026/2027,
+// comparable a las curvas historicas de calib.json (ver buildRealCurve más abajo).
+let POSICIONES_HISTORIAL = {};
 let currentDetailPerson = null;
 fetch('https://script.google.com/macros/s/AKfycbziLxysdp04o_M4RCPMiqpvh95haHTaI8ebFo1JQrNxJQb0tXK_Gt3DlobRosca6Agt/exec')
   .then(r => r.json())
   .then(obj => {
-    POSICIONES_ACTUALES = obj || {};
-    // Estos datos llegan de forma asíncrona: si el usuario ya tenía una ficha o el panel de
-    // estadísticas abiertos antes de que respondiera el Web App, los refrescamos ahora.
+    POSICIONES_ACTUALES = (obj && obj.actual) || {};
+    POSICIONES_HISTORIAL = (obj && obj.historial) || {};
+    // Estos datos llegan de forma asíncrona: si el usuario ya tenía una ficha, el panel de
+    // estadísticas o la estimación con gráfica abiertos antes de que respondiera el Web App,
+    // los refrescamos ahora.
     if(currentDetailPerson){
       const wrap = document.getElementById('posActualWrap');
       if(wrap) wrap.innerHTML = renderPosicionActualBox(currentDetailPerson);
+      const estimResult = document.getElementById('estimResult');
+      if(estimResult && estimResult.style.display !== 'none'){
+        estimResult.innerHTML = buildEstimResultHtml(currentDetailPerson);
+      }
     }
     if(typeof specStatsBuilt !== 'undefined' && specStatsBuilt && specStatsPanel){
       specStatsPanel.innerHTML = buildSpecStatsTable();
     }
   })
-  .catch(() => { POSICIONES_ACTUALES = {}; });
+  .catch(() => { POSICIONES_ACTUALES = {}; POSICIONES_HISTORIAL = {}; });
 
 // Clave con la que se guarda cada posición: "<especialidad>_<bloque>", p.ej. "038_I" o "038_II".
 function renderPosicionActualBox(r){
@@ -343,7 +353,8 @@ function renderPosicionActualBox(r){
       return `<div class="pos-actual-item"><strong>${code} · ${SPECIALTIES[code]}</strong>: el último llamamiento (${fechaTxt}) ya ha superado tu posición en esta especialidad.</div>`;
     }
     const diferencia = rankTuyo - rankActual;
-    return `<div class="pos-actual-item"><strong>${code} · ${SPECIALTIES[code]}</strong>: el último llamamiento (${fechaTxt}) llegó al puesto ${rankActual.toLocaleString('es-ES')} de ${totalMap[code].toLocaleString('es-ES')}. Te preceden aproximadamente <strong>${diferencia.toLocaleString('es-ES')}</strong> personas.</div>`;
+    const pctActual = Math.min(100, Math.round((rankActual/totalMap[code])*1000)/10);
+    return `<div class="pos-actual-item"><strong>${code} · ${SPECIALTIES[code]}</strong>: el último llamamiento (${fechaTxt}) llegó al puesto ${rankActual.toLocaleString('es-ES')} de ${totalMap[code].toLocaleString('es-ES')} <strong>(${pctActual.toFixed(1)}%)</strong>. Te preceden aproximadamente <strong>${diferencia.toLocaleString('es-ES')}</strong> personas.</div>`;
   }).filter(Boolean);
   if(bloques.length === 0) return '';
   return `<div class="info-box" style="margin-top:10px;">
@@ -450,6 +461,32 @@ const VARIATION_WARN_DAYS = 120; // ~4 meses
 // Colores por curso, del más reciente al más antiguo (se reciclan si hubiera más de 4 cursos).
 // Deliberadamente lejos del rojo de la línea "tu posición" para que no se confundan entre sí.
 const CHART_COLORS = ['#1d6fa5', '#2d6a4f', '#8a4c00', '#6b4fa0'];
+// Color de la curva REAL del curso actual (2026/2027): deliberadamente distinto de los colores
+// históricos y del rojo de "tu posición", para que destaque como el dato más fiable del gráfico.
+const REAL_CURVE_COLOR = '#0e9594';
+
+// Curva REAL del curso actual: a diferencia de las curvas históricas (estimadas a partir de un
+// código de puesto global de la CARM que no es específico de la especialidad), aquí se conoce el
+// candidato exacto que fue el último convocado en cada acto de adjudicación, así que el puesto y
+// el % dentro de la especialidad se calculan con precisión total contra bySpecialtyI/DATA — no es
+// una estimación. Se construye a partir del historial que va guardando checkResultados cada vez
+// que detecta un nuevo máximo (envolvente acumulada, igual que las curvas históricas de calib.json).
+function buildRealCurve(code){
+  const hist = POSICIONES_HISTORIAL[code + '_I'] || [];
+  const total = bySpecialtyI[code] || 0;
+  if(!total || hist.length===0) return [];
+  const pts = hist.map(h=>{
+    const person = DATA.find(d => d.p === h.posicion);
+    const rank = person && person._rankSpec ? person._rankSpec[code] : null;
+    if(rank == null) return null;
+    const day = Math.round((new Date(h.fecha) - CURRENT_COURSE_START) / 86400000);
+    return [Math.max(day, MIN_DAY), Math.min(100, (rank/total)*100)];
+  }).filter(Boolean).sort((a,b)=> a[0]-b[0]);
+  let runmax = -1;
+  const cm = [];
+  pts.forEach(([d,p])=>{ if(p > runmax){ runmax = p; cm.push([d,p]); } });
+  return cm;
+}
 
 // Devuelve el día-de-curso del 1 de cada mes que cae dentro de [minDay, maxDay], para pintar
 // marcas de mes en el eje X del gráfico (no solo el primer y último punto).
@@ -478,7 +515,8 @@ function monthTicksInRange(minDay, maxDay){
 // HTML como fichero único.
 function buildCurveChart(code, targetPct, rank, total){
   const yearsWithCurve = CALIB_YEARS.filter(y => CALIB[y] && CALIB[y][code] && CALIB[y][code].length);
-  if(yearsWithCurve.length===0) return '';
+  const realCurve = buildRealCurve(code);
+  if(yearsWithCurve.length===0 && realCurve.length===0) return '';
 
   let domMin = Infinity, domMax = -Infinity;
   yearsWithCurve.forEach(y=>{
@@ -486,6 +524,11 @@ function buildCurveChart(code, targetPct, rank, total){
     domMin = Math.min(domMin, curve[0][0]);
     domMax = Math.max(domMax, curve[curve.length-1][0]);
   });
+  if(realCurve.length){
+    domMin = Math.min(domMin, realCurve[0][0]);
+    domMax = Math.max(domMax, realCurve[realCurve.length-1][0]);
+  }
+  if(!isFinite(domMin)){ domMin = MIN_DAY; domMax = MIN_DAY; }
   if(domMax - domMin < 20){ domMax = domMin + 20; }
   const pad = (domMax-domMin) * 0.04;
   domMin -= pad; domMax += pad;
@@ -513,10 +556,14 @@ function buildCurveChart(code, targetPct, rank, total){
   // referencia más reciente con datos, el día en que se alcanzaría esta posición (el punto
   // de "cuándo te van a llamar"). Si esa posición no se llegó a alcanzar en ningún curso, se
   // deja el texto en la esquina derecha de la línea de referencia.
-  let refDay = null;
-  for(const y of yearsWithCurve){
-    const d = dayForPercentile(CALIB[y][code], targetPct);
-    if(d != null){ refDay = d; break; }
+  // Si el curso actual (real) ya tiene datos que alcanzan esta posición, se prioriza esa curva
+  // para colocar la etiqueta "Tu posición": es el dato más fiable, al no ser una estimación.
+  let refDay = realCurve.length ? dayForPercentile(realCurve, targetPct) : null;
+  if(refDay == null){
+    for(const y of yearsWithCurve){
+      const d = dayForPercentile(CALIB[y][code], targetPct);
+      if(d != null){ refDay = d; break; }
+    }
   }
   let labelX, labelAnchor;
   if(refDay != null){
@@ -546,6 +593,28 @@ function buildCurveChart(code, targetPct, rank, total){
     }
   });
 
+  // Curva REAL del curso actual (2026/2027): datos exactos, no estimados, así que se dibuja más
+  // gruesa y con un punto pulsante en su último dato (marca que sigue en curso, a diferencia de
+  // las curvas históricas que ya están cerradas).
+  if(realCurve.length){
+    const pts = realCurve.map(([d,p]) => `${sx(d).toFixed(1)},${sy(p).toFixed(1)}`).join(' ');
+    svg += `<polyline points="${pts}" fill="none" stroke="${REAL_CURVE_COLOR}" stroke-width="2.75"/>`;
+    const last = realCurve[realCurve.length-1];
+    const lx = sx(last[0]).toFixed(1), ly = sy(last[1]).toFixed(1);
+    svg += `<circle cx="${lx}" cy="${ly}" r="2.5" fill="${REAL_CURVE_COLOR}" stroke="#fff" stroke-width="1">
+        <animate attributeName="r" values="2.5;5;2.5" dur="1.4s" repeatCount="indefinite"/>
+      </circle>`;
+    const dayReal = dayForPercentile(realCurve, targetPct);
+    if(dayReal != null){
+      const cx = sx(dayReal).toFixed(1);
+      svg += `<circle cx="${cx}" cy="${ty.toFixed(1)}" r="3" fill="none" stroke="${REAL_CURVE_COLOR}" stroke-width="1.5">
+          <animate attributeName="r" values="3;7;3" dur="1.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.6s" repeatCount="indefinite"/>
+        </circle>`;
+      svg += `<circle cx="${cx}" cy="${ty.toFixed(1)}" r="3" fill="${REAL_CURVE_COLOR}" stroke="#fff" stroke-width="1"/>`;
+    }
+  }
+
   // Se muestran todos los meses del rango, solo con su abreviatura (sin año en ninguno,
   // ni siquiera en los extremos) y todos con el mismo tamaño de letra.
   const ticks = monthTicksInRange(domMin, domMax);
@@ -557,7 +626,10 @@ function buildCurveChart(code, targetPct, rank, total){
   });
   svg += `</svg>`;
 
-  const legend = yearsWithCurve.map((y, idx)=>{
+  const realLegendItem = realCurve.length
+    ? `<span class="estim-legend-item"><span class="estim-legend-dot" style="background:${REAL_CURVE_COLOR}"></span><strong>Curso actual (real): 2026/2027</strong></span>`
+    : '';
+  const legend = realLegendItem + yearsWithCurve.map((y, idx)=>{
     const color = CHART_COLORS[idx % CHART_COLORS.length];
     return `<span class="estim-legend-item"><span class="estim-legend-dot" style="background:${color}"></span>Curso escolar: ${yearLabel(y)}</span>`;
   }).join('');
@@ -634,6 +706,17 @@ function renderEstimacion(personEntry){
     shownIdx++;
   });
   return html || `<div class="estim-box estim-warn">No se ha podido calcular una estimación.</div>`;
+}
+
+// Contenido completo del panel de estimación (texto + gráficas). Extraído a una función propia
+// porque se necesita renderizar dos veces: al pulsar "Ver estimación", y para refrescarlo si los
+// datos en vivo (POSICIONES_HISTORIAL) llegan después de que el usuario ya lo tuviera abierto.
+function buildEstimResultHtml(r){
+  return `
+    <p class="estim-disclaimer">Estimación no oficial, calculada comparando tu posición con el ritmo real de llamamientos de ${CALIB_YEARS.map(y=>'<strong>'+yearLabel(y)+'</strong>').join(' y ')} para cada especialidad (fuente: SIDI, actos de adjudicación semanales), junto con los llamamientos <strong>reales ya detectados este curso 2026/2027</strong> según se van produciendo. El resultado de este curso dependerá del número real de vacantes y puede diferir bastante.</p>
+    <p class="estim-updated">Última actualización de los datos de llamamientos: <strong>${fmtFullDate(CALIB_META.lastUpdated)}</strong>.</p>
+    <p class="estim-avail-note">⚠️ Importante: esta estimación asume que mantienes tu disponibilidad (localidades, tipo de jornada, etc.) correctamente actualizada en la aplicación oficial de la Consejería. Si no la tienes actualizada, puedes no ser llamado aunque tu número ya haya sido superado.</p>
+    ${renderEstimacion(r)}`;
 }
 
 // ---- Normalize helper (strip accents, uppercase) ----
@@ -940,11 +1023,7 @@ function showDetail(r){
   document.getElementById('estimBtn').addEventListener('click', function(){
     const box = document.getElementById('estimResult');
     if(box.style.display==='none'){
-      box.innerHTML = `
-        <p class="estim-disclaimer">Estimación no oficial, calculada comparando tu posición con el ritmo real de llamamientos de ${CALIB_YEARS.map(y=>'<strong>'+yearLabel(y)+'</strong>').join(' y ')} para cada especialidad (fuente: SIDI, actos de adjudicación semanales). El resultado de este curso dependerá del número real de vacantes y puede diferir bastante.</p>
-        <p class="estim-updated">Última actualización de los datos de llamamientos: <strong>${fmtFullDate(CALIB_META.lastUpdated)}</strong>.</p>
-        <p class="estim-avail-note">⚠️ Importante: esta estimación asume que mantienes tu disponibilidad (localidades, tipo de jornada, etc.) correctamente actualizada en la aplicación oficial de la Consejería. Si no la tienes actualizada, puedes no ser llamado aunque tu número ya haya sido superado.</p>
-        ${renderEstimacion(r)}`;
+      box.innerHTML = buildEstimResultHtml(r);
       box.style.display = 'block';
       this.textContent = '📅 Ocultar';
     } else {

@@ -104,6 +104,9 @@
   .alert-box-text strong{color:var(--gris-900);}
   .alert-btn{flex:none;display:inline-flex;align-items:center;gap:7px;background:var(--naranja-600);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:inherit;font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .12s;}
   .alert-btn:hover{background:var(--naranja-700);}
+  .tg-follow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--gris-700);}
+  .tg-follow-btn{display:inline-flex;align-items:center;gap:6px;background:#229ED9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .12s;}
+  .tg-follow-btn:hover{background:#1c87ba;}
   .alert-btn svg{transform-origin:50% 0%;animation:bell-ring 2.4s ease-in-out infinite;}
   @keyframes bell-ring{
     0%, 62%, 100%{transform:rotate(0deg);}
@@ -315,6 +318,11 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Avísame de nuevas vacantes
       </a>
+    </div>
+
+    <div class="tg-follow-row" id="tgFollowRow">
+      <span>📲 También puedes seguir los avisos en nuestro canal de Telegram, sin dar tu email:</span>
+      <a class="tg-follow-btn" href="https://t.me/lumenoposicionesmurcia" target="_blank" rel="noopener">Unirme al canal</a>
     </div>
 
     <div class="stats-toggle-row" id="statsToggleRow">

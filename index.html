@@ -136,7 +136,7 @@
     cursor:pointer;color:var(--gris-700);display:none;align-items:center;justify-content:center;font-size:15px;
   }
   .clear-btn:hover{background:var(--gris-300);}
-  select#bloqueFilter{
+  select#bloqueFilter, select#cuerpoFilterSec{
     padding:0 14px;border-radius:11px;border:1.5px solid var(--gris-300);font-size:15px;background:#fbfcfe;color:var(--gris-700);
     min-width:170px;
   }
@@ -257,6 +257,11 @@
   .visit-counter{display:block;text-align:center;color:var(--gris-500);font-size:12px;margin:14px 0 0;}
   .footer-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid var(--gris-100);}
 
+  .stage-toggle{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+  .stage-btn{background:#fff;border:1.5px solid var(--gris-300);color:var(--gris-700);border-radius:10px;padding:9px 16px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:border-color .12s,background .12s,color .12s;}
+  .stage-btn:hover{border-color:var(--naranja-500);}
+  .stage-btn.active{background:var(--naranja-600);border-color:var(--naranja-600);color:#fff;}
+
   ::selection{background:var(--naranja-100);}
 </style>
 </head>
@@ -269,14 +274,19 @@
           <img src="https://lumenoposiciones.github.io/interinidad-murcia/logo.png" alt="Lumen Oposiciones Docentes" style="height:72px;width:auto;display:block;">
         </div>
       </div>
-      <h1>Interinidades del Cuerpo de Maestros<br><span style="font-size:20px;font-weight:700;">Región de Murcia · Curso 2026-2027</span></h1>
-      <p class="subtitle">Buscador elaborado por <strong>Lumen Oposiciones</strong>. Consulta tu posición, bloque, especialidades acreditadas y el desglose completo de tu puntuación.</p>
+      <h1><span id="pageTitleMain">Interinidades del Cuerpo de Maestros</span><br><span style="font-size:20px;font-weight:700;">Región de Murcia · Curso 2026-2027</span></h1>
+      <p class="subtitle" id="pageSubtitle">Buscador elaborado por <strong>Lumen Oposiciones</strong>. Consulta tu posición, bloque, especialidades acreditadas y el desglose completo de tu puntuación.</p>
       <div class="stats-row" id="statsRow"></div>
-      <a class="pdf-link" href="https://www.carm.es/web/descarga?ARCHIVO=1_res_anexos_int_def.pdf&ALIAS=ARCH&IDCONTENIDO=208253&IDTIPO=60&RASTRO=c77%24m22725%2C22759%2C4254" target="_blank" rel="noopener">
+      <a class="pdf-link" id="pdfLinkPrim" href="https://www.carm.es/web/descarga?ARCHIVO=1_res_anexos_int_def.pdf&ALIAS=ARCH&IDCONTENIDO=208253&IDTIPO=60&RASTRO=c77%24m22725%2C22759%2C4254" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
         Descargar el listado oficial completo en PDF (CARM)
       </a>
     </header>
+
+    <div class="stage-toggle" id="stageToggle" role="tablist" aria-label="Etapa educativa">
+      <button type="button" class="stage-btn active" id="stageBtnPrim" data-stage="primaria" role="tab" aria-selected="true">Maestros / Primaria</button>
+      <button type="button" class="stage-btn" id="stageBtnSec" data-stage="secundaria" role="tab" aria-selected="false">Secundaria, FP y otros cuerpos</button>
+    </div>
 
     <div class="search-card">
       <div class="search-row">
@@ -292,11 +302,14 @@
           <option value="I">Bloque I (96.2 a)</option>
           <option value="II">Bloque II (96.2 b)</option>
         </select>
+        <select id="cuerpoFilterSec" style="display:none;">
+          <option value="">Todos los cuerpos</option>
+        </select>
       </div>
       <p class="hint">Escribe al menos dos palabras (nombre y apellido, en cualquier orden) o busca por los 4 dígitos visibles del DNI. Los datos no distinguen mayúsculas ni acentos.</p>
     </div>
 
-    <div class="alert-box">
+    <div class="alert-box" id="alertBoxPrim">
       <div class="alert-box-text"><strong>¿Quieres enterarte al momento de una vacante nueva?</strong> Regístrate con tu email y te avisamos automáticamente en cuanto la CARM publique una convocatoria de acto de adjudicación telemático (el plazo para solicitar plaza suele ser muy breve).</div>
       <a class="alert-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdOCED7tRK8MqCXgKsmSX8v9yYrRIchdM1lj6GihSwW1IXhbw/viewform" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -304,7 +317,7 @@
       </a>
     </div>
 
-    <div class="stats-toggle-row">
+    <div class="stats-toggle-row" id="statsToggleRow">
       <button class="stats-toggle-btn" id="statsToggleBtn">📊 Ver estadística y situación real de las bolsas de cada especialidad</button>
       <button class="stats-toggle-btn" id="pdfArchiveToggleBtn">📄 Ver histórico de llamamientos (PDFs)</button>
     </div>
@@ -1074,7 +1087,7 @@ const MAX_RESULTS_SHOWN = 40;
 
 let lastMatchesCount = 0;
 
-function doSearch(){
+function doSearchPrimaria(){
   const raw = qEl.value.trim();
   clearBtn.style.display = raw ? 'flex' : 'none';
   detailAreaEl.innerHTML = '';
@@ -1156,7 +1169,7 @@ function doSearch(){
 
 // Show only the selected candidate: hide the list/summary, show the detail card
 // with a link to come back to the full list of matches.
-function selectResult(r){
+function selectResultPrimaria(r){
   resultsListEl.style.display = 'none';
   resultsSummaryEl.style.display = 'none';
   showDetail(r);
@@ -1319,6 +1332,303 @@ qEl.focus();
     qEl.focus();
   });
 })();
+
+// =====================================================================
+// ---- Fase 1 Secundaria / FP / EOI / Musica / Artes Plasticas ----
+// Datos cargados bajo demanda desde secundaria_parsed.json (no van embebidos
+// en el HTML para no penalizar la carga inicial de quien solo busca en
+// Primaria). Fase 1: solo busqueda, posicion y bloque dentro de la lista
+// concreta. El seguimiento en vivo de llamamientos llegara en una fase
+// posterior, igual que para Primaria.
+let STAGE = 'primaria';
+let SEC = null;
+let SEC_NORM = null;
+let SEC_LOADED = false;
+let SEC_LOADING = null;
+
+function tidyName_(s){
+  if(!s) return '';
+  const str = String(s);
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function ensureSecLoaded_(){
+  if(SEC_LOADED) return Promise.resolve();
+  if(SEC_LOADING) return SEC_LOADING;
+  SEC_LOADING = fetch('./secundaria_parsed.json')
+    .then(r => { if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(obj => {
+      SEC = obj;
+      const groups = {};
+      (SEC.personas||[]).forEach(p => { (groups[p.listaNum] = groups[p.listaNum] || []).push(p); });
+      Object.keys(groups).forEach(k => {
+        const list = groups[k];
+        list.sort((a,b) => b.puntos - a.puntos);
+        list.forEach((p,i) => { p._rank = i+1; p._total = list.length; });
+      });
+      SEC_NORM = (SEC.personas||[]).map(p => ({ ref:p, nn: norm(p.nombre), dni: p.dni4 || '' }));
+      const cuerpoSelect = document.getElementById('cuerpoFilterSec');
+      if(cuerpoSelect){
+        const codigos = Object.keys(SEC.cuerpos||{}).sort((a,b) => (SEC.cuerpos[a]||'').localeCompare(SEC.cuerpos[b]||'', 'es'));
+        cuerpoSelect.innerHTML = '<option value="">Todos los cuerpos</option>' +
+          codigos.map(c => `<option value="${c}">${escapeHtml(tidyName_(SEC.cuerpos[c]))}</option>`).join('');
+      }
+      SEC_LOADED = true;
+    })
+    .catch(err => {
+      console.error('Error cargando datos de Secundaria:', err);
+      resultsSummaryEl.textContent = 'No se han podido cargar los datos de Secundaria/FP/EOI/Musica/Artes. Recarga la pagina o intentalo mas tarde.';
+      resultsListEl.innerHTML = '';
+    })
+    .finally(() => { SEC_LOADING = null; });
+  return SEC_LOADING;
+}
+
+function updateStatsRow_(){
+  const statsRow = document.getElementById('statsRow');
+  if(!statsRow) return;
+  if(STAGE === 'secundaria'){
+    if(!SEC){ statsRow.innerHTML = ''; return; }
+    statsRow.innerHTML = `
+      <div class="stat-pill"><b>${(SEC.personas||[]).length.toLocaleString('es-ES')}</b>Registros en listas</div>
+      <div class="stat-pill"><b>${Object.keys(SEC.cuerpos||{}).length.toLocaleString('es-ES')}</b>Cuerpos</div>
+      <div class="stat-pill"><b>${Object.keys(SEC.especialidades||{}).length.toLocaleString('es-ES')}</b>Especialidades</div>
+    `;
+  } else {
+    statsRow.innerHTML = `
+      <div class="stat-pill"><b>${DATA.length.toLocaleString('es-ES')}</b>Aspirantes en total</div>
+      <div class="stat-pill"><b>${bloqueCounts.I.toLocaleString('es-ES')}</b>en Bloque I</div>
+      <div class="stat-pill"><b>${bloqueCounts.II.toLocaleString('es-ES')}</b>en Bloque II</div>
+    `;
+  }
+}
+
+function setStage(newStage){
+  if(STAGE === newStage) return;
+  STAGE = newStage;
+  qEl.value = '';
+  clearBtn.style.display = 'none';
+  resultsListEl.style.display = '';
+  resultsSummaryEl.style.display = '';
+  resultsListEl.innerHTML = '';
+  resultsSummaryEl.innerHTML = '';
+  detailAreaEl.innerHTML = '';
+  currentDetailPerson = null;
+
+  const btnPrim = document.getElementById('stageBtnPrim');
+  const btnSec = document.getElementById('stageBtnSec');
+  if(btnPrim){ btnPrim.classList.toggle('active', newStage === 'primaria'); btnPrim.setAttribute('aria-selected', newStage === 'primaria' ? 'true' : 'false'); }
+  if(btnSec){ btnSec.classList.toggle('active', newStage === 'secundaria'); btnSec.setAttribute('aria-selected', newStage === 'secundaria' ? 'true' : 'false'); }
+
+  bloqueFilterEl.style.display = newStage === 'primaria' ? '' : 'none';
+  const cuerpoSelect = document.getElementById('cuerpoFilterSec');
+  if(cuerpoSelect) cuerpoSelect.style.display = newStage === 'secundaria' ? '' : 'none';
+
+  const pdfLink = document.getElementById('pdfLinkPrim');
+  const alertBox = document.getElementById('alertBoxPrim');
+  const statsToggleRow = document.getElementById('statsToggleRow');
+  const specStatsPanelEl = document.getElementById('specStatsPanel');
+  const pdfArchivePanelEl = document.getElementById('pdfArchivePanel');
+  const isPrim = newStage === 'primaria';
+  if(pdfLink) pdfLink.style.display = isPrim ? '' : 'none';
+  if(alertBox) alertBox.style.display = isPrim ? '' : 'none';
+  if(statsToggleRow) statsToggleRow.style.display = isPrim ? '' : 'none';
+  if(!isPrim){
+    if(specStatsPanelEl) specStatsPanelEl.style.display = 'none';
+    if(pdfArchivePanelEl) pdfArchivePanelEl.style.display = 'none';
+  }
+
+  const titleEl = document.getElementById('pageTitleMain');
+  const subtitleEl = document.getElementById('pageSubtitle');
+  if(isPrim){
+    if(titleEl) titleEl.textContent = 'Interinidades del Cuerpo de Maestros';
+    if(subtitleEl) subtitleEl.textContent = 'Buscador elaborado por Lumen Oposiciones. Consulta tu posición, bloque, especialidades acreditadas y el desglose completo de tu puntuación.';
+    qEl.placeholder = 'Nombre y apellidos, o los 4 dígitos visibles del DNI…';
+    updateStatsRow_();
+  } else {
+    if(titleEl) titleEl.textContent = 'Secundaria, FP y otros cuerpos';
+    if(subtitleEl) subtitleEl.textContent = 'Buscador para Profesores de Secundaria, Profesores Técnicos de FP y otros cuerpos (EOI, Música, Artes Plásticas). Fase 1: consulta tu posición y bloque dentro de tu lista.';
+    qEl.placeholder = 'Nombre y apellidos, o los 4 dígitos visibles del DNI…';
+    if(!SEC_LOADED){
+      resultsSummaryEl.textContent = 'Cargando datos de Secundaria…';
+      ensureSecLoaded_().then(() => { resultsSummaryEl.textContent = ''; updateStatsRow_(); });
+    } else {
+      updateStatsRow_();
+    }
+  }
+  qEl.focus();
+}
+
+function doSearchSecundaria(){
+  const raw = qEl.value.trim();
+  clearBtn.style.display = raw ? 'flex' : 'none';
+  detailAreaEl.innerHTML = '';
+  resultsListEl.style.display = '';
+  resultsSummaryEl.style.display = '';
+
+  if(!SEC_LOADED){
+    resultsListEl.innerHTML = '';
+    resultsSummaryEl.textContent = raw ? 'Cargando datos de Secundaria…' : '';
+    return;
+  }
+
+  const cuerpoSelect = document.getElementById('cuerpoFilterSec');
+  const cuerpo = cuerpoSelect ? cuerpoSelect.value : '';
+
+  if(!raw){
+    resultsListEl.innerHTML = '';
+    resultsSummaryEl.textContent = '';
+    return;
+  }
+
+  const isDniQuery = /^\\d{2,4}$/.test(raw);
+  let tokens = [];
+  if(!isDniQuery) tokens = norm(raw).split(/\\s+/).filter(Boolean);
+
+  let matches;
+  if(isDniQuery){
+    matches = SEC_NORM.filter(d => d.dni.includes(raw));
+  } else if(tokens.length){
+    matches = SEC_NORM.filter(d => tokens.every(t => d.nn.includes(t)));
+  } else {
+    matches = [];
+  }
+  if(cuerpo) matches = matches.filter(d => d.ref.cuerpo === cuerpo);
+
+  if(!isDniQuery && tokens.length < 1){
+    resultsSummaryEl.textContent = '';
+    resultsListEl.innerHTML = '';
+    return;
+  }
+  if(!isDniQuery && raw.split(/\\s+/).filter(Boolean).length < 2 && raw.length < 4){
+    resultsSummaryEl.innerHTML = 'Sigue escribiendo… (nombre + al menos un apellido)';
+    resultsListEl.innerHTML = '';
+    return;
+  }
+
+  matches.sort((a,b) => b.ref.puntos - a.ref.puntos);
+
+  if(matches.length === 0){
+    resultsSummaryEl.textContent = 'Sin resultados';
+    resultsListEl.innerHTML = `<div class="empty-state">No se ha encontrado a nadie con ese nombre en las listas de Secundaria, FP y otros cuerpos.<br>Revisa la ortografía o prueba solo con los apellidos.</div>`;
+    return;
+  }
+
+  resultsSummaryEl.textContent = matches.length === 1
+    ? '1 resultado'
+    : `${matches.length} resultados${matches.length>MAX_RESULTS_SHOWN? ' (mostrando los ' + MAX_RESULTS_SHOWN + ' primeros por puntuación)':''}`;
+
+  const shown = matches.slice(0, MAX_RESULTS_SHOWN);
+  resultsListEl.innerHTML = shown.map(d => {
+    const r = d.ref;
+    const espInfo = SEC.especialidades[r.cuerpo + '-' + r.especialidad] || {};
+    const cuerpoNombre = tidyName_(SEC.cuerpos[r.cuerpo] || r.cuerpo);
+    const espNombre = tidyName_(espInfo.nombre || '');
+    return `<div class="result-item">
+      <div>
+        <div class="ri-name">${escapeHtml(r.nombre)}</div>
+        <div class="ri-sub">${escapeHtml(cuerpoNombre)} · ${escapeHtml(espNombre)} (${escapeHtml(r.especialidad)}) · DNI ${escapeHtml(r.dni4)}</div>
+      </div>
+      <div class="ri-right">
+        <div class="ri-total">${fmt(r.puntos)}</div>
+        <div class="ri-bloque">Bloque ${escapeHtml(r.bloque)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  lastMatchesCount = matches.length;
+
+  resultsListEl.querySelectorAll('.result-item').forEach((el, i) => {
+    el.addEventListener('click', () => { selectResultSecundaria(shown[i].ref); });
+  });
+
+  if(shown.length === 1){
+    selectResultSecundaria(shown[0].ref);
+  }
+}
+
+function selectResultSecundaria(r){
+  resultsListEl.style.display = 'none';
+  resultsSummaryEl.style.display = 'none';
+  showDetailSecundaria(r);
+  const backHtml = `<button class="back-link" id="backToList">← Ver ${lastMatchesCount > 1 ? 'los ' + lastMatchesCount + ' resultados' : 'otros resultados'}</button>`;
+  detailAreaEl.insertAdjacentHTML('afterbegin', backHtml);
+  const backBtn = document.getElementById('backToList');
+  if(backBtn) backBtn.addEventListener('click', () => {
+    resultsListEl.style.display = '';
+    resultsSummaryEl.style.display = '';
+    detailAreaEl.innerHTML = '';
+  });
+  if(typeof detailAreaEl.scrollIntoView === 'function') detailAreaEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function showDetailSecundaria(r){
+  const total = r._total || 0;
+  const rank = r._rank || 0;
+  const pct = total ? Math.round((1 - (rank-1)/total)*1000)/10 : null;
+  const espInfo = SEC.especialidades[r.cuerpo + '-' + r.especialidad] || {};
+  const cuerpoNombre = tidyName_(SEC.cuerpos[r.cuerpo] || r.cuerpo);
+  const espNombre = tidyName_(espInfo.nombre || '');
+
+  detailAreaEl.innerHTML = `
+    <div class="detail-card">
+      <div class="dc-head">
+        <div>
+          <p class="dc-name">${escapeHtml(r.nombre)}</p>
+          <div class="dc-dni">DNI/NIE ${escapeHtml(r.dni4)} &nbsp;·&nbsp; Nº de orden en la lista: <strong>${escapeHtml(r.nLista)}</strong></div>
+        </div>
+        <div class="dc-total-box">
+          <div class="lbl">Puntuación total</div>
+          <div class="val">${fmt(r.puntos)}</div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="info-box">
+          <div class="lbl">Cuerpo</div>
+          <div class="body"><strong>${escapeHtml(cuerpoNombre)}</strong></div>
+        </div>
+        <div class="info-box">
+          <div class="lbl">Especialidad</div>
+          <div class="body"><strong>${escapeHtml(r.especialidad)} · ${escapeHtml(espNombre || '—')}</strong></div>
+        </div>
+        <div class="info-box">
+          <div class="lbl">Lista</div>
+          <div class="body"><strong>Bloque ${escapeHtml(r.bloque)}</strong><br><span style="color:var(--gris-500);font-size:12.5px;">${escapeHtml(r.listaDescripcion || '')}</span></div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:12px;">
+        <div class="lbl">Posición en esta lista</div>
+        <div class="body">
+          <strong>${rank.toLocaleString('es-ES')}</strong> de ${total.toLocaleString('es-ES')}${pct!=null ? ` &nbsp;<span style="color:var(--gris-500)">(percentil ${pct}%)</span>` : ''}
+          ${pct!=null ? `<div class="rank-bar-outer"><div class="rank-bar-inner" style="width:${pct}%"></div></div>` : ''}
+        </div>
+      </div>
+
+      <p class="exp-note" style="margin-top:14px;">Fase 1 de Secundaria, FP y otros cuerpos: de momento solo se muestra tu posición y bloque dentro de tu lista concreta, tal y como figuran en el listado oficial. El seguimiento en vivo de llamamientos para estas listas llegará más adelante.</p>
+    </div>
+  `;
+}
+
+function doSearch(){
+  return STAGE === 'secundaria' ? doSearchSecundaria() : doSearchPrimaria();
+}
+
+function selectResult(r){
+  return STAGE === 'secundaria' ? selectResultSecundaria(r) : selectResultPrimaria(r);
+}
+
+(function initStageToggle(){
+  const btnPrim = document.getElementById('stageBtnPrim');
+  const btnSec = document.getElementById('stageBtnSec');
+  if(btnPrim) btnPrim.addEventListener('click', () => setStage('primaria'));
+  if(btnSec) btnSec.addEventListener('click', () => setStage('secundaria'));
+  const cuerpoSelect = document.getElementById('cuerpoFilterSec');
+  if(cuerpoSelect) cuerpoSelect.addEventListener('change', doSearch);
+})();
+// ---- Fin bloque Fase 1 Secundaria ----
+// =====================================================================
 </script>
 </body>
 </html>

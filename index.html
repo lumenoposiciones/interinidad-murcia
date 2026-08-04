@@ -107,6 +107,8 @@
   .tg-follow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--gris-700);}
   .tg-follow-btn{display:inline-flex;align-items:center;gap:6px;background:#229ED9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .12s;}
   .tg-follow-btn:hover{background:#1c87ba;}
+  .alert-btn-secondary{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--naranja-700);border:1.5px solid var(--naranja-600);border-radius:8px;padding:8px 15px;font-family:inherit;font-size:13.5px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .12s,color .12s;}
+  .alert-btn-secondary:hover{background:var(--naranja-600);color:#fff;}
   .alert-btn svg{transform-origin:50% 0%;animation:bell-ring 2.4s ease-in-out infinite;}
   @keyframes bell-ring{
     0%, 62%, 100%{transform:rotate(0deg);}
@@ -313,16 +315,12 @@
     </div>
 
     <div class="alert-box" id="alertBoxPrim">
-      <div class="alert-box-text"><strong>¿Quieres enterarte al momento de una vacante nueva?</strong> Regístrate con tu email y te avisamos automáticamente en cuanto la CARM publique una convocatoria de acto de adjudicación telemático (el plazo para solicitar plaza suele ser muy breve).</div>
+      <div class="alert-box-text"><strong>¿Quieres enterarte al momento de una vacante nueva?</strong> Regístrate con tu email y número de teléfono, y te avisamos automáticamente en cuanto la CARM publique una convocatoria de acto de adjudicación telemático (el plazo para solicitar plaza suele ser muy breve). También puedes seguir los avisos en nuestro canal de Telegram, únete:</div>
       <a class="alert-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdOCED7tRK8MqCXgKsmSX8v9yYrRIchdM1lj6GihSwW1IXhbw/viewform" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         Avísame de nuevas vacantes
       </a>
-    </div>
-
-    <div class="tg-follow-row" id="tgFollowRow">
-      <span>📲 También puedes seguir los avisos en nuestro canal de Telegram, sin dar tu email:</span>
-      <a class="tg-follow-btn" href="https://t.me/lumenoposicionesmurcia" target="_blank" rel="noopener">Unirme al canal</a>
+      <a class="alert-btn-secondary" href="https://t.me/+2dFXMrlJDCxkZDI0" target="_blank" rel="noopener">📲 Unirme al canal</a>
     </div>
 
     <div class="stats-toggle-row" id="statsToggleRow">

@@ -278,6 +278,7 @@
         <div class="brand-mark">
           <img src="https://lumenoposiciones.github.io/interinidad-murcia/logo.png" alt="Lumen Oposiciones Docentes" style="height:72px;width:auto;display:block;">
         </div>
+        <img src="https://lumenoposiciones.github.io/interinidad-murcia/escudo-murcia.png" alt="Escudo de la Región de Murcia" style="height:72px;width:auto;display:block;margin-left:auto;">
       </div>
       <h1><span id="pageTitleMain">Interinidades del Cuerpo de Maestros</span><br><span style="font-size:20px;font-weight:700;">Región de Murcia · Curso 2026-2027</span></h1>
       <p class="subtitle" id="pageSubtitle">Buscador elaborado por <strong>Lumen Oposiciones</strong>. Consulta tu posición, bloque, especialidades acreditadas y el desglose completo de tu puntuación.</p>
@@ -336,6 +337,9 @@
 
     <section class="how-it-works" aria-labelledby="howItWorksTitle">
       <h2 id="howItWorksTitle">¿Cómo funciona esta web?</h2>
+            <div id="secFase1Note" class="alert-box" style="display:none;margin-bottom:16px;">
+              <div class="alert-box-text"><strong>Fase 1 en Secundaria, FP y otros cuerpos:</strong> de momento solo puedes buscar tu posición y bloque en la lista, tal y como figuran en el listado oficial. El resto de funciones (posición en vivo, estimación de fecha, estadísticas, histórico de PDFs y avisos automáticos) llegarán más adelante.</div>
+            </div>
       <div class="grid3">
         <div class="how-step">
           <span class="how-step-num">1</span>
@@ -366,6 +370,7 @@
           <li><strong>Registrarte con tu email</strong> para recibir un aviso automático en cuanto la CARM publique una convocatoria nueva de acto de adjudicación telemático.</li>
           <li><strong>Recibir una alerta personalizada por email</strong> cuando el llamamiento supere tu posición en tu especialidad (mismo registro, indicando tu especialidad y tus 4 dígitos de DNI/NIE).</li>
           <li><strong>Descargar el PDF oficial completo</strong> de la lista definitiva publicada por la CARM.</li>
+            <li><strong>Seguir el canal de Telegram</strong> para recibir avisos de nuevas convocatorias sin necesidad de dar tu email.</li>
         </ul>
       </div>
 
@@ -1436,6 +1441,8 @@ function setStage(newStage){
   const specStatsPanelEl = document.getElementById('specStatsPanel');
   const pdfArchivePanelEl = document.getElementById('pdfArchivePanel');
   const isPrim = newStage === 'primaria';
+    const secFase1Note = document.getElementById('secFase1Note');
+    if(secFase1Note) secFase1Note.style.display = isPrim ? 'none' : '';
   if(pdfLink) pdfLink.style.display = isPrim ? '' : 'none';
   if(alertBox) alertBox.style.display = isPrim ? '' : 'none';
   if(statsToggleRow) statsToggleRow.style.display = isPrim ? '' : 'none';
